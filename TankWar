@@ -1,0 +1,85 @@
+import java.awt.*;
+import java.awt.event.*;
+import java.util.List;
+import java.util.ArrayList;
+
+public class TankWar extends Frame {
+  public static final int GAME_WIDTH = 800;
+	public static final int GAME_HEIGHT = 600;
+
+	Tank myTank = new Tank(50, 50, this);
+	Missile m = null;
+	Image offScreenImage = null;
+
+	List<Missile> missiles = new ArrayList<Missile>();
+
+	public static void main(String[] args) {
+		TankWar tw = new TankWar();
+		tw.launchFrame();
+	}
+
+	public void launchFrame() {
+		setLayout(null);
+		setBounds(300, 100, GAME_WIDTH, GAME_HEIGHT);
+		setResizable(false);
+		new Thread(new PaintThread()).start();
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				System.exit(0);
+			}
+		});
+		addKeyListener(new KeyMonitor());
+		setVisible(true);
+	}
+
+	public void paint(Graphics g) {
+		g.drawString("Missiles Counts: " + missiles.size(), 10, 50);
+		myTank.generateTank(g);
+		for (int i = 0; i < missiles.size(); i++) {
+			Missile m = missiles.get(i);
+			m.generateMissle(g);
+		}
+	}
+
+	// DoubleBuffered
+	public void update(Graphics g) {
+		if (offScreenImage == null) {
+			offScreenImage = this.createImage(GAME_WIDTH, GAME_HEIGHT);
+		}
+		Graphics gOffScreenImage = offScreenImage.getGraphics();
+		Color c = gOffScreenImage.getColor();
+		gOffScreenImage.setColor(Color.white);
+		gOffScreenImage.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+		gOffScreenImage.setColor(c);
+		paint(gOffScreenImage);
+		g.drawImage(offScreenImage, 0, 0, null);
+
+	}
+
+	private class PaintThread implements Runnable {
+
+		public void run() {
+			try {
+				while (true) {
+					repaint();
+					Thread.sleep(50);
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	private class KeyMonitor extends KeyAdapter {
+
+		public void keyPressed(KeyEvent e) {
+			myTank.keyPressed(e);
+		}
+
+		public void keyReleased(KeyEvent e) {
+			myTank.keyReleased(e);
+		}
+	}
+
+}
