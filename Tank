@@ -1,0 +1,177 @@
+import java.awt.*;
+import java.awt.event.*;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Tank {
+  private static final int XSPEED = 5;
+	private static final int YSPEED = 5;
+	public static final int WIDTH = 30;
+	public static final int HEIGHT = 30;
+
+	public int x, y;
+	private boolean bU = false, bR = false, bD = false, bL = false;
+	TankWar tw;
+
+	enum Direction {
+		U, UR, R, DR, D, DL, L, UL, STOP
+	};
+
+	Direction dir = Direction.STOP;
+	Direction cannonDir = Direction.R;
+
+	public Tank(int x, int y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	public Tank(int x, int y, TankWar tw) {
+		this(x, y);
+		this.tw = tw;
+	}
+
+	public void generateTank(Graphics g) {
+		Color c = g.getColor();
+		g.setColor(Color.BLUE);
+		g.fillOval(x, y, WIDTH, HEIGHT);
+		g.setColor(c);
+
+		switch (cannonDir) {
+		case U:
+			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH / 2, y);
+			break;
+		case UR:
+			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH, y);
+			break;
+		case R:
+			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH, y + HEIGHT / 2);
+			break;
+		case DR:
+			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH, y + HEIGHT);
+			break;
+		case D:
+			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH / 2, y + HEIGHT);
+			break;
+		case DL:
+			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x, y + HEIGHT);
+			break;
+		case L:
+			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x, y + HEIGHT / 2);
+			break;
+		case UL:
+			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x, y);
+			break;
+		}
+		tankMove();
+
+	}
+
+	public void keyPressed(KeyEvent e) {
+		int keyInput = e.getKeyCode();
+		switch (keyInput) {
+		case KeyEvent.VK_UP:
+			bU = true;
+			break;
+		case KeyEvent.VK_RIGHT:
+			bR = true;
+			break;
+		case KeyEvent.VK_DOWN:
+			bD = true;
+			break;
+		case KeyEvent.VK_LEFT:
+			bL = true;
+			break;
+		case KeyEvent.VK_A:
+			fire();
+			break;
+		}
+
+	}
+
+	private Missile fire() {
+		int x = this.x + Tank.WIDTH / 2 - Missile.WIDTH / 2;
+		int y = this.y + Tank.HEIGHT / 2 - Missile.HEIGHT / 2;
+		Missile m = new Missile(x, y, cannonDir);
+		tw.missiles.add(m);
+		return m;
+	}
+
+	public void keyReleased(KeyEvent e) {
+		int keyInput = e.getKeyCode();
+		switch (keyInput) {
+		case KeyEvent.VK_UP:
+			bU = false;
+			break;
+		case KeyEvent.VK_RIGHT:
+			bR = false;
+			break;
+		case KeyEvent.VK_DOWN:
+			bD = false;
+			break;
+		case KeyEvent.VK_LEFT:
+			bL = false;
+			break;
+		}
+	}
+
+	void tankMove() {
+		switch (dir) {
+		case U:
+			y -= YSPEED;
+			break;
+		case UR:
+			y -= YSPEED;
+			x += XSPEED;
+			break;
+		case R:
+			x += XSPEED;
+			break;
+		case DR:
+			y += YSPEED;
+			x += XSPEED;
+			break;
+		case D:
+			y += YSPEED;
+			break;
+		case DL:
+			y += YSPEED;
+			x -= XSPEED;
+			break;
+		case L:
+			x -= YSPEED;
+			break;
+		case UL:
+			y -= YSPEED;
+			x -= XSPEED;
+			break;
+		case STOP:
+			break;
+		}
+
+		if (this.dir != Direction.STOP)
+			this.cannonDir = this.dir;
+		locateDir();
+	}
+
+	public void locateDir() {
+		if (bU && !bR && !bD && !bL)
+			dir = Direction.U;
+		if (!bU && bR && !bD && !bL)
+			dir = Direction.R;
+		if (!bU && !bR && bD && !bL)
+			dir = Direction.D;
+		if (!bU && !bR && !bD && bL)
+			dir = Direction.L;
+		if (bU && bR && !bD && !bL)
+			dir = Direction.UR;
+		if (!bU && bR && bD && !bL)
+			dir = Direction.DR;
+		if (!bU && !bR && bD && bL)
+			dir = Direction.DL;
+		if (bU && !bR && !bD && bL)
+			dir = Direction.UL;
+		if (!bU && !bR && !bD && !bL)
+			dir = Direction.STOP;
+	}
+
+}
