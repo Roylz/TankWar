@@ -1,16 +1,17 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 public class Tank {
-  private static final int XSPEED = 5;
+	private static final int XSPEED = 5;
 	private static final int YSPEED = 5;
 	public static final int WIDTH = 30;
 	public static final int HEIGHT = 30;
 
-	public int x, y;
+	private int x, y;
 	private boolean bU = false, bR = false, bD = false, bL = false;
+	private boolean bGood;
+	private boolean isAlive = true;
 	TankWar tw;
 
 	enum Direction {
@@ -19,48 +20,64 @@ public class Tank {
 
 	Direction dir = Direction.STOP;
 	Direction cannonDir = Direction.R;
+	private static Random r = new Random();
 
-	public Tank(int x, int y) {
+	private int moveStep = r.nextInt(12) + 3;
+
+	public Tank(int x, int y, boolean bGood) {
 		this.x = x;
 		this.y = y;
+		this.bGood = bGood;
 	}
 
-	public Tank(int x, int y, TankWar tw) {
-		this(x, y);
+	public Tank(int x, int y, boolean bGood, Direction dir, TankWar tw) {
+		this(x, y, bGood);
+		this.dir = dir;
 		this.tw = tw;
 	}
 
 	public void generateTank(Graphics g) {
-		Color c = g.getColor();
-		g.setColor(Color.BLUE);
-		g.fillOval(x, y, WIDTH, HEIGHT);
-		g.setColor(c);
+		if (isAlive == true) {
+			Color c = g.getColor();
+			if (bGood)
+				g.setColor(Color.BLUE);
+			else
+				g.setColor(Color.RED);
+			g.fillOval(x, y, WIDTH, HEIGHT);
+			g.setColor(c);
+			switch (cannonDir) {
+			case U:
+				g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH / 2, y);
+				break;
+			case UR:
+				g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH, y);
+				break;
+			case R:
+				g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH, y + HEIGHT
+						/ 2);
+				break;
+			case DR:
+				g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH, y + HEIGHT);
+				break;
+			case D:
+				g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH / 2, y
+						+ HEIGHT);
+				break;
+			case DL:
+				g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x, y + HEIGHT);
+				break;
+			case L:
+				g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x, y + HEIGHT / 2);
+				break;
+			case UL:
+				g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x, y);
+				break;
+			}
 
-		switch (cannonDir) {
-		case U:
-			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH / 2, y);
-			break;
-		case UR:
-			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH, y);
-			break;
-		case R:
-			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH, y + HEIGHT / 2);
-			break;
-		case DR:
-			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH, y + HEIGHT);
-			break;
-		case D:
-			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH / 2, y + HEIGHT);
-			break;
-		case DL:
-			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x, y + HEIGHT);
-			break;
-		case L:
-			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x, y + HEIGHT / 2);
-			break;
-		case UL:
-			g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x, y);
-			break;
+		} else {
+			if (bGood == false) {
+				tw.tanks.remove(this);
+			}
 		}
 		tankMove();
 
@@ -85,13 +102,13 @@ public class Tank {
 			fire();
 			break;
 		}
-
+		locateDir();
 	}
 
 	private Missile fire() {
 		int x = this.x + Tank.WIDTH / 2 - Missile.WIDTH / 2;
 		int y = this.y + Tank.HEIGHT / 2 - Missile.HEIGHT / 2;
-		Missile m = new Missile(x, y, cannonDir);
+		Missile m = new Missile(x, y, cannonDir, this.tw);
 		tw.missiles.add(m);
 		return m;
 	}
@@ -112,6 +129,7 @@ public class Tank {
 			bL = false;
 			break;
 		}
+		locateDir();
 	}
 
 	void tankMove() {
@@ -138,7 +156,7 @@ public class Tank {
 			x -= XSPEED;
 			break;
 		case L:
-			x -= YSPEED;
+			x -= XSPEED;
 			break;
 		case UL:
 			y -= YSPEED;
@@ -150,28 +168,60 @@ public class Tank {
 
 		if (this.dir != Direction.STOP)
 			this.cannonDir = this.dir;
-		locateDir();
+		if (x < 0)
+			x = 0;
+		else if (y < 30)
+			y = 30;
+		else if (x + Tank.WIDTH > TankWar.GAME_WIDTH)
+			x = TankWar.GAME_WIDTH - Tank.WIDTH;
+		else if (y + Tank.HEIGHT > TankWar.GAME_HEIGHT)
+			y = TankWar.GAME_HEIGHT - Tank.HEIGHT;
+
+		// how enemy moves
+		if (!bGood) {
+			Direction[] enemyDirs = Direction.values();
+			if (moveStep == 0) {
+				moveStep = r.nextInt(12) + 3;
+				int rn = r.nextInt(enemyDirs.length);
+				dir = enemyDirs[rn];
+			}
+
+			moveStep--;
+		}
 	}
 
 	public void locateDir() {
 		if (bU && !bR && !bD && !bL)
 			dir = Direction.U;
-		if (!bU && bR && !bD && !bL)
+		else if (!bU && bR && !bD && !bL)
 			dir = Direction.R;
-		if (!bU && !bR && bD && !bL)
+		else if (!bU && !bR && bD && !bL)
 			dir = Direction.D;
-		if (!bU && !bR && !bD && bL)
+		else if (!bU && !bR && !bD && bL)
 			dir = Direction.L;
-		if (bU && bR && !bD && !bL)
+		else if (bU && bR && !bD && !bL)
 			dir = Direction.UR;
-		if (!bU && bR && bD && !bL)
+		else if (!bU && bR && bD && !bL)
 			dir = Direction.DR;
-		if (!bU && !bR && bD && bL)
+		else if (!bU && !bR && bD && bL)
 			dir = Direction.DL;
-		if (bU && !bR && !bD && bL)
+		else if (bU && !bR && !bD && bL)
 			dir = Direction.UL;
-		if (!bU && !bR && !bD && !bL)
+		else if (!bU && !bR && !bD && !bL)
 			dir = Direction.STOP;
+	}
+
+	public Rectangle getTankRect() {
+		return new Rectangle(x, y, WIDTH, HEIGHT);
+
+	}
+
+	public boolean isAlive() {
+		return isAlive;
+	}
+
+	public void setAlive(boolean isAlive) {
+		this.isAlive = isAlive;
 	}
 
 }
