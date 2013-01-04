@@ -4,14 +4,17 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class TankWar extends Frame {
-  public static final int GAME_WIDTH = 800;
+	public static final int GAME_WIDTH = 800;
 	public static final int GAME_HEIGHT = 600;
 
-	Tank myTank = new Tank(50, 50, this);
-	Missile m = null;
+	Tank myTank = new Tank(50, 50, true, Tank.Direction.STOP, this);
+
+	Missile m;
 	Image offScreenImage = null;
 
 	List<Missile> missiles = new ArrayList<Missile>();
+	List<Explosion> explos = new ArrayList<Explosion>();
+	List<Tank> tanks = new ArrayList<Tank>();
 
 	public static void main(String[] args) {
 		TankWar tw = new TankWar();
@@ -19,6 +22,10 @@ public class TankWar extends Frame {
 	}
 
 	public void launchFrame() {
+
+		for (int i = 0; i < 10; i++) {
+			tanks.add(new Tank(60 + 40 * (i + 1), 60 + 40 * (i + 1), false, Tank.Direction.R, this));
+		}
 		setLayout(null);
 		setBounds(300, 100, GAME_WIDTH, GAME_HEIGHT);
 		setResizable(false);
@@ -34,10 +41,23 @@ public class TankWar extends Frame {
 
 	public void paint(Graphics g) {
 		g.drawString("Missiles Counts: " + missiles.size(), 10, 50);
+		g.drawString("Explosion Counts: " + explos.size(), 10, 70);
+		g.drawString("Tanks Counts: " + tanks.size(), 10, 90);
 		myTank.generateTank(g);
+
+		for (int i = 0; i < tanks.size(); i++) {
+			tanks.get(i).generateTank(g);
+		}
+
 		for (int i = 0; i < missiles.size(); i++) {
-			Missile m = missiles.get(i);
+			m = missiles.get(i);
 			m.generateMissle(g);
+			m.hitTanks(tanks);
+		}
+
+		for (int i = 0; i < explos.size(); i++) {
+			Explosion e = explos.get(i);
+			e.generateExplo(g);
 		}
 	}
 
@@ -68,7 +88,6 @@ public class TankWar extends Frame {
 				e.printStackTrace();
 			}
 		}
-
 	}
 
 	private class KeyMonitor extends KeyAdapter {
