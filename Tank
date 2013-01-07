@@ -3,16 +3,20 @@ import java.awt.event.*;
 import java.util.*;
 
 public class Tank {
+
 	private static final int XSPEED = 5;
 	private static final int YSPEED = 5;
 	public static final int WIDTH = 30;
 	public static final int HEIGHT = 30;
 
 	private int x, y;
+	private int last_X, last_Y;
 	private boolean bU = false, bR = false, bD = false, bL = false;
 	private boolean bGood;
 	private boolean isAlive = true;
 	TankWar tw;
+	Missile m;
+	Wall w;
 
 	enum Direction {
 		U, UR, R, DR, D, DL, L, UL, STOP
@@ -28,6 +32,8 @@ public class Tank {
 		this.x = x;
 		this.y = y;
 		this.bGood = bGood;
+		this.last_X = x;
+		this.last_Y = y;
 	}
 
 	public Tank(int x, int y, boolean bGood, Direction dir, TankWar tw) {
@@ -101,16 +107,42 @@ public class Tank {
 		case KeyEvent.VK_A:
 			fire();
 			break;
+		case KeyEvent.VK_S:
+			superFire();
+			break;
 		}
 		locateDir();
 	}
 
 	private Missile fire() {
+		if(!isAlive) return null;
 		int x = this.x + Tank.WIDTH / 2 - Missile.WIDTH / 2;
 		int y = this.y + Tank.HEIGHT / 2 - Missile.HEIGHT / 2;
-		Missile m = new Missile(x, y, cannonDir, this.tw);
+		if (bGood)
+			m = new Missile(x, y, cannonDir, true, this.tw, this.w);
+		else
+			m = new Missile(x, y, cannonDir, false, this.tw, this.w);
 		tw.missiles.add(m);
 		return m;
+	}
+	
+	private Missile fire(Direction dir) {
+		if(!isAlive) return null;
+		int x = this.x + Tank.WIDTH / 2 - Missile.WIDTH / 2;
+		int y = this.y + Tank.HEIGHT / 2 - Missile.HEIGHT / 2;
+		if (bGood)
+			m = new Missile(x, y, dir, true, this.tw, this.w);
+		else
+			m = new Missile(x, y, dir, false, this.tw, this.w);
+		tw.missiles.add(m);
+		return m;
+	}
+	
+	private void superFire(){
+		Direction dirs[] = Direction.values();
+		for(int i = 0; i < dirs.length - 1; i++){
+			fire(dirs[i]);
+		}
 	}
 
 	public void keyReleased(KeyEvent e) {
@@ -133,6 +165,9 @@ public class Tank {
 	}
 
 	void tankMove() {
+		last_X = x;
+		last_Y = y;
+		
 		switch (dir) {
 		case U:
 			y -= YSPEED;
@@ -184,12 +219,18 @@ public class Tank {
 				moveStep = r.nextInt(12) + 3;
 				int rn = r.nextInt(enemyDirs.length);
 				dir = enemyDirs[rn];
+				if(r.nextInt(40) > 25) fire();
 			}
 
 			moveStep--;
 		}
 	}
 
+	void tankStay(){
+		x = last_X;
+		y = last_Y;
+	}
+	
 	public void locateDir() {
 		if (bU && !bR && !bD && !bL)
 			dir = Direction.U;
@@ -224,4 +265,31 @@ public class Tank {
 		this.isAlive = isAlive;
 	}
 
+	public boolean isbGood() {
+		return bGood;
+	}
+	
+	public boolean collidesWithWall(Wall w){
+		if(isAlive && getTankRect().intersects(w.getWallRect())){
+			tankStay();
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean collidesWithTanks(java.util.List<Tank> tanks){
+		for(int i = 0; i < tanks.size(); i++){
+			Tank t = tanks.get(i);
+			
+			if(this != t){
+		if(isAlive && t.isAlive() && getTankRect().intersects(t.getTankRect())){
+			this.tankStay();
+			t.tankStay();
+			return true;
+			}
+		}
+		}
+		return false;
+	}
+	
 }
