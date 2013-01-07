@@ -1,15 +1,16 @@
 import java.awt.*;
 import java.util.List;
-import java.util.ArrayList;
 
 public class Missile {
 	private static final int XSPEED = 10;
 	private static final int YSPEED = 10;
-	public static final int WIDTH = 5;
-	public static final int HEIGHT = 5;
+	public static final int WIDTH = 8;
+	public static final int HEIGHT = 8;
 
 	TankWar tw = new TankWar();
+	Wall w;
 	private boolean mLive = true;
+	private boolean mGood;
 
 	int x, y;
 	Tank.Direction dir;
@@ -20,15 +21,20 @@ public class Missile {
 		this.dir = dir;
 	}
 
-	public Missile(int x, int y, Tank.Direction dir, TankWar tw) {
+	public Missile(int x, int y, Tank.Direction dir, boolean mGood, TankWar tw, Wall w) {
 		this(x, y, dir);
 		this.tw = tw;
+		this.mGood = mGood;
+		this.w = w;
 	}
 
 	public void generateMissle(Graphics g) {
-		if (mLive == true) {
+		if (mLive) {
 			Color c = g.getColor();
-			g.setColor(Color.BLACK);
+			if (mGood)
+				g.setColor(Color.BLUE);
+			else
+				g.setColor(Color.RED);
 			g.fillOval(x, y, WIDTH, HEIGHT);
 			g.setColor(c);
 			missileMove();
@@ -71,7 +77,7 @@ public class Missile {
 		if (x < 0 || y < 0 || x > TankWar.GAME_WIDTH || y > TankWar.GAME_HEIGHT) {
 			mLive = false;
 		}
-
+		
 	}
 
 	public Rectangle getMissileRect() {
@@ -79,8 +85,12 @@ public class Missile {
 	}
 
 	public boolean hitTank(Tank t) {
-		if (getMissileRect().intersects(t.getTankRect()) && t.isAlive()) {
+		if ((mGood != t.isbGood())
+				&& getMissileRect().intersects(t.getTankRect())
+				&& t.isAlive()
+				&& mLive) {
 			t.setAlive(false);
+
 			mLive = false;
 			tw.explos.add(new Explosion(x, y, this.tw));
 			return true;
@@ -93,6 +103,14 @@ public class Missile {
 		for (int i = 0; i < tanks.size(); i++) {
 			if (hitTank(tw.tanks.get(i)))
 				return true;
+		}
+		return false;
+	}
+	
+	public boolean hitWall(Wall w){
+		if(mLive && getMissileRect().intersects(w.getWallRect())){
+			mLive = false;
+			return true;
 		}
 		return false;
 	}
