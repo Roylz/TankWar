@@ -1,0 +1,32 @@
+import java.awt.*;
+
+public class Wall {
+  private int x, y;
+	private int width, height;
+	Missile m;
+	TankWar tw;
+	
+	public Wall(int x, int y, int width, int height) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+	}
+	public Wall(int x, int y, int width, int height, Missile m, TankWar tw){
+		this(x, y , width, height);
+		this.m = m;
+		this.tw = tw;
+	}
+	
+	public void genetateWall(Graphics g){
+		Color c = g.getColor();
+		g.setColor(Color.BLACK);
+		g.fillRect(x, y, width, height);
+		g.setColor(c);
+	}
+	
+	public Rectangle getWallRect(){
+		return new Rectangle(x, y, width, height);
+	}
+
+}
