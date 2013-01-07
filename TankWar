@@ -10,6 +10,7 @@ public class TankWar extends Frame {
 	Tank myTank = new Tank(50, 50, true, Tank.Direction.STOP, this);
 
 	Missile m;
+	Wall w = new Wall(250, 350, 50, 250);
 	Image offScreenImage = null;
 
 	List<Missile> missiles = new ArrayList<Missile>();
@@ -24,7 +25,8 @@ public class TankWar extends Frame {
 	public void launchFrame() {
 
 		for (int i = 0; i < 10; i++) {
-			tanks.add(new Tank(60 + 40 * (i + 1), 60 + 40 * (i + 1), false, Tank.Direction.R, this));
+			tanks.add(new Tank(60 + 40 * (i + 1), 60 + 40 * (i + 1), false,
+					Tank.Direction.R, this));
 		}
 		setLayout(null);
 		setBounds(300, 100, GAME_WIDTH, GAME_HEIGHT);
@@ -43,16 +45,28 @@ public class TankWar extends Frame {
 		g.drawString("Missiles Counts: " + missiles.size(), 10, 50);
 		g.drawString("Explosion Counts: " + explos.size(), 10, 70);
 		g.drawString("Tanks Counts: " + tanks.size(), 10, 90);
+
 		myTank.generateTank(g);
+		w.genetateWall(g);
+
+		myTank.collidesWithWall(w);
 
 		for (int i = 0; i < tanks.size(); i++) {
-			tanks.get(i).generateTank(g);
+			Tank t = tanks.get(i);
+			t.generateTank(g);
+			t.collidesWithWall(w);
+			t.collidesWithTanks(tanks);
+			myTank.collidesWithTanks(tanks);
 		}
 
 		for (int i = 0; i < missiles.size(); i++) {
 			m = missiles.get(i);
 			m.generateMissle(g);
 			m.hitTanks(tanks);
+			m.hitTank(myTank);
+			m.hitWall(w);
+			
+			
 		}
 
 		for (int i = 0; i < explos.size(); i++) {
@@ -82,7 +96,7 @@ public class TankWar extends Frame {
 			try {
 				while (true) {
 					repaint();
-					Thread.sleep(50);
+					Thread.sleep(60);
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
