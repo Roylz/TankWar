@@ -2,7 +2,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 public class Explosion {
-  int x, y;
+	int x, y;
 	boolean live = true;
 
 	private TankWar tw;
@@ -26,7 +26,7 @@ public class Explosion {
 		}
 
 		Color c = g.getColor();
-		g.setColor(Color.BLACK);
+		g.setColor(Color.YELLOW);
 		g.fillOval(x, y, diameter[step], diameter[step]);
 		g.setColor(c);
 		step++;
