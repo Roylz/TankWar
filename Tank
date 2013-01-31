@@ -4,31 +4,31 @@ import java.util.*;
 
 public class Tank {
 
-	private static final int XSPEED = 5;
-	private static final int YSPEED = 5;
-	public static final int WIDTH = 30;
-	public static final int HEIGHT = 30;
+	private static final int XSPEED = 5;		// move speed of tank at X-axis
+	private static final int YSPEED = 5;		// move speed of tank at Y-axis
+	public static final int WIDTH = 30;		// tank width
+	public static final int HEIGHT = 30;		// tank height
 
-	private int x, y;
-	private int last_X, last_Y;
-	private boolean bU = false, bR = false, bD = false, bL = false;
-	private boolean bGood;
-	private boolean isAlive = true;
+	private int x, y;				// tank's postion coordinate(x, y)
+	private int last_X, last_Y;			// remember the last coordinate of tank
+	private boolean bU = false, bR = false, bD = false, bL = false;			// direction detemination
+	private boolean bGood;				// the tank you control will have a true value; the enemy will have false
+	private boolean isAlive = true;			// detemine whether tank is alive
 	TankWar tw;
 	Missile m;
 	Wall w;
 
-	enum Direction {
+	enum Direction {				// enum possible direcitons that tank can move
 		U, UR, R, DR, D, DL, L, UL, STOP
 	};
 
-	Direction dir = Direction.STOP;
-	Direction cannonDir = Direction.R;
+	Direction dir = Direction.STOP;			// default direction of tank, stop at default position
+	Direction cannonDir = Direction.R;		// default the direction of cannon
 	private static Random r = new Random();
 
-	private int moveStep = r.nextInt(12) + 3;
+	private int moveStep = r.nextInt(12) + 3;	// get a random number to make tank moving
 
-	public Tank(int x, int y, boolean bGood) {
+	public Tank(int x, int y, boolean bGood) {	
 		this.x = x;
 		this.y = y;
 		this.bGood = bGood;
@@ -36,13 +36,13 @@ public class Tank {
 		this.last_Y = y;
 	}
 
-	public Tank(int x, int y, boolean bGood, Direction dir, TankWar tw) {
+	public Tank(int x, int y, boolean bGood, Direction dir, TankWar tw) {		// overload constructor
 		this(x, y, bGood);
 		this.dir = dir;
 		this.tw = tw;
 	}
 
-	public void generateTank(Graphics g) {
+	public void generateTank(Graphics g) {			// draw tanks
 		if (isAlive == true) {
 			Color c = g.getColor();
 			if (bGood)
@@ -51,7 +51,7 @@ public class Tank {
 				g.setColor(Color.RED);
 			g.fillOval(x, y, WIDTH, HEIGHT);
 			g.setColor(c);
-			switch (cannonDir) {
+			switch (cannonDir) {			// draw cannons according to the direction that tank moves
 			case U:
 				g.drawLine(x + WIDTH / 2, y + HEIGHT / 2, x + WIDTH / 2, y);
 				break;
@@ -81,15 +81,15 @@ public class Tank {
 			}
 
 		} else {
-			if (bGood == false) {
+			if (bGood == false) {			// if tank is dead, remove it from array
 				tw.tanks.remove(this);
 			}
 		}
-		tankMove();
+		tankMove();		// tank starts to move
 
 	}
 
-	public void keyPressed(KeyEvent e) {
+	public void keyPressed(KeyEvent e) {		// key listener to control your tank to move
 		int keyInput = e.getKeyCode();
 		switch (keyInput) {
 		case KeyEvent.VK_UP:
@@ -114,8 +114,8 @@ public class Tank {
 		locateDir();
 	}
 
-	private Missile fire() {
-		if(!isAlive) return null;
+	private Missile fire() {					// fire function, return the missile to detemine
+		if(!isAlive) return null;				// whethet it hits a tank or not
 		int x = this.x + Tank.WIDTH / 2 - Missile.WIDTH / 2;
 		int y = this.y + Tank.HEIGHT / 2 - Missile.HEIGHT / 2;
 		if (bGood)
@@ -126,8 +126,8 @@ public class Tank {
 		return m;
 	}
 	
-	private Missile fire(Direction dir) {
-		if(!isAlive) return null;
+	private Missile fire(Direction dir) {				// overload fire() to make sure missile is fired
+		if(!isAlive) return null;				// from cannons
 		int x = this.x + Tank.WIDTH / 2 - Missile.WIDTH / 2;
 		int y = this.y + Tank.HEIGHT / 2 - Missile.HEIGHT / 2;
 		if (bGood)
@@ -138,15 +138,15 @@ public class Tank {
 		return m;
 	}
 	
-	private void superFire(){
-		Direction dirs[] = Direction.values();
+	private void superFire(){					// tank can fire eight missiles toward all directions
+		Direction dirs[] = Direction.values();			// at the same time
 		for(int i = 0; i < dirs.length - 1; i++){
 			fire(dirs[i]);
 		}
 	}
 
-	public void keyReleased(KeyEvent e) {
-		int keyInput = e.getKeyCode();
+	public void keyReleased(KeyEvent e) {				// release the key then tank will stay at the last 
+		int keyInput = e.getKeyCode();				// position
 		switch (keyInput) {
 		case KeyEvent.VK_UP:
 			bU = false;
@@ -164,7 +164,7 @@ public class Tank {
 		locateDir();
 	}
 
-	void tankMove() {
+	void tankMove() {						// control your tank to move
 		last_X = x;
 		last_Y = y;
 		
@@ -201,10 +201,11 @@ public class Tank {
 			break;
 		}
 
-		if (this.dir != Direction.STOP)
-			this.cannonDir = this.dir;
-		if (x < 0)
-			x = 0;
+		if (this.dir != Direction.STOP)				// make sure the cannon direciton will
+			this.cannonDir = this.dir;			// move along with the direction of tanks
+		
+		if (x < 0)						// make sure tanks donot go across the border
+			x = 0;						// of game interface
 		else if (y < 30)
 			y = 30;
 		else if (x + Tank.WIDTH > TankWar.GAME_WIDTH)
@@ -212,8 +213,8 @@ public class Tank {
 		else if (y + Tank.HEIGHT > TankWar.GAME_HEIGHT)
 			y = TankWar.GAME_HEIGHT - Tank.HEIGHT;
 
-		// how enemy moves
-		if (!bGood) {
+									
+		if (!bGood) {						// this controls how enemy moves
 			Direction[] enemyDirs = Direction.values();
 			if (moveStep == 0) {
 				moveStep = r.nextInt(12) + 3;
@@ -226,13 +227,13 @@ public class Tank {
 		}
 	}
 
-	void tankStay(){
-		x = last_X;
+	void tankStay(){						// when you don't move tank, tank will stay
+		x = last_X;						// ata last coordinate(x, y)
 		y = last_Y;
 	}
 	
-	public void locateDir() {
-		if (bU && !bR && !bD && !bL)
+	public void locateDir() {					// detemine the directions from the key you 
+		if (bU && !bR && !bD && !bL)				// press
 			dir = Direction.U;
 		else if (!bU && bR && !bD && !bL)
 			dir = Direction.R;
@@ -252,24 +253,24 @@ public class Tank {
 			dir = Direction.STOP;
 	}
 
-	public Rectangle getTankRect() {
+	public Rectangle getTankRect() {				// get the rectangle of tanks to detemind colliding
 		return new Rectangle(x, y, WIDTH, HEIGHT);
 
 	}
 
-	public boolean isAlive() {
+	public boolean isAlive() {					// detemine whether tanks is alive or not
 		return isAlive;
 	}
 
-	public void setAlive(boolean isAlive) {
+	public void setAlive(boolean isAlive) {				// to reset tank
 		this.isAlive = isAlive;
 	}
 
-	public boolean isbGood() {
+	public boolean isbGood() {					// to detemine your tank or enemy tanks
 		return bGood;
 	}
 	
-	public boolean collidesWithWall(Wall w){
+	public boolean collidesWithWall(Wall w){			// to detemine whethe tanks have collides with walls
 		if(isAlive && getTankRect().intersects(w.getWallRect())){
 			tankStay();
 			return true;
@@ -277,7 +278,7 @@ public class Tank {
 		return false;
 	}
 	
-	public boolean collidesWithTanks(java.util.List<Tank> tanks){
+	public boolean collidesWithTanks(java.util.List<Tank> tanks){	// to detemine whethe tanks have collides with tanks
 		for(int i = 0; i < tanks.size(); i++){
 			Tank t = tanks.get(i);
 			
