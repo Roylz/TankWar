@@ -1,7 +1,7 @@
 import java.awt.*;
 
 public class Wall {
-  private int x, y;
+	private int x, y;
 	private int width, height;
 	Missile m;
 	TankWar tw;
@@ -12,6 +12,7 @@ public class Wall {
 		this.width = width;
 		this.height = height;
 	}
+
 	public Wall(int x, int y, int width, int height, Missile m, TankWar tw){
 		this(x, y , width, height);
 		this.m = m;
