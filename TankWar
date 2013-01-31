@@ -3,26 +3,26 @@ import java.awt.event.*;
 import java.util.List;
 import java.util.ArrayList;
 
-public class TankWar extends Frame {
-	public static final int GAME_WIDTH = 800;
+public class TankWar extends Frame {		
+	public static final int GAME_WIDTH = 800;		// game interface
 	public static final int GAME_HEIGHT = 600;
 
-	Tank myTank = new Tank(50, 50, true, Tank.Direction.STOP, this);
+	Tank myTank = new Tank(50, 50, true, Tank.Direction.STOP, this);	
 
 	Missile m;
 	Wall w = new Wall(250, 350, 50, 250);
-	Image offScreenImage = null;
+	Image offScreenImage = null;				// new an offscreenimage
 
-	List<Missile> missiles = new ArrayList<Missile>();
-	List<Explosion> explos = new ArrayList<Explosion>();
-	List<Tank> tanks = new ArrayList<Tank>();
+	List<Missile> missiles = new ArrayList<Missile>();	// new a list to collect missiles
+	List<Explosion> explos = new ArrayList<Explosion>();	// new a list to collect explosions
+	List<Tank> tanks = new ArrayList<Tank>();		// new a list to collect tanks
 
-	public static void main(String[] args) {
+	public static void main(String[] args) {		// Main Function
 		TankWar tw = new TankWar();
 		tw.launchFrame();
 	}
 
-	public void launchFrame() {
+	public void launchFrame() {				//set up the game, add tanks to game
 
 		for (int i = 0; i < 10; i++) {
 			tanks.add(new Tank(60 + 40 * (i + 1), 60 + 40 * (i + 1), false,
@@ -41,7 +41,7 @@ public class TankWar extends Frame {
 		setVisible(true);
 	}
 
-	public void paint(Graphics g) {
+	public void paint(Graphics g) {				// game process
 		g.drawString("Missiles Counts: " + missiles.size(), 10, 50);
 		g.drawString("Explosion Counts: " + explos.size(), 10, 70);
 		g.drawString("Tanks Counts: " + tanks.size(), 10, 90);
@@ -75,7 +75,7 @@ public class TankWar extends Frame {
 		}
 	}
 
-	// DoubleBuffered
+							// DoubleBuffered the paint to mkae repaint more fluently
 	public void update(Graphics g) {
 		if (offScreenImage == null) {
 			offScreenImage = this.createImage(GAME_WIDTH, GAME_HEIGHT);
@@ -90,8 +90,8 @@ public class TankWar extends Frame {
 
 	}
 
-	private class PaintThread implements Runnable {
-
+	private class PaintThread implements Runnable {		// a paint thread to detemine how long it repaint
+								// on the game interface
 		public void run() {
 			try {
 				while (true) {
@@ -104,7 +104,7 @@ public class TankWar extends Frame {
 		}
 	}
 
-	private class KeyMonitor extends KeyAdapter {
+	private class KeyMonitor extends KeyAdapter {		// key monitor to ative key event
 
 		public void keyPressed(KeyEvent e) {
 			myTank.keyPressed(e);
