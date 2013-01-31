@@ -16,7 +16,7 @@ public class Explosion {
 		this.tw = tw;
 	}
 
-	public void generateExplo(Graphics g) {
+	public void generateExplo(Graphics g) {			//draw the explosion when hit a tank 
 		if (!live)
 			tw.explos.remove(this);
 		if (step == diameter.length) {
